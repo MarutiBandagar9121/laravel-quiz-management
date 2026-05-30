@@ -1,7 +1,7 @@
 question_types {
   id int pk
-  value string not null
-  description string
+  question_type string not null
+  role_description string
   renderer_hint string
   evaluation_mode string not null
   create_at timestamp
@@ -58,7 +58,7 @@ quiz_question {
   display_order int not null
 }
 
-user_type {
+user_types {
   id int pk
   user_type string not null
   role_description string
@@ -71,7 +71,7 @@ user {
   user_type_id int fk not null
   email string not null unique
   status enum not null //active, inactive
-  hashed_password string not null
+  password string not null
   created_at timestamp
   updated_at timestamp
 }
@@ -97,7 +97,6 @@ quiz_attempt_response {
   quiz_question_id int fk not null
   answer_data json
   is_correct bool
-  evaluation_status enum
   allotted_points int
   comment string
   graded_by_id int 
