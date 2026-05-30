@@ -38,7 +38,7 @@ question_answers{
   updated_at timestamp
 }
 
-quiz {
+quizzes {
   id int pk
   name string not null
   allotted_time_in_sec int
@@ -56,6 +56,8 @@ quiz_question {
   question_id int fk not null
   points int not null
   display_order int not null
+  create_at timestamp
+  updated_at timestamp
 }
 
 user_types {
