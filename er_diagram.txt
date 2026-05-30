@@ -1,0 +1,127 @@
+question_types {
+  id int pk
+  value string not null
+  description string
+  renderer_hint string
+  evaluation_mode string not null
+  create_at timestamp
+  updated_at timestamp
+}
+
+question {
+  id int pk
+  question_text string not null
+  question_hint string
+  question_type_id int fk
+  question_status enum not null //draft, active, inactive, deleted
+  created_by_id int
+  updated_by_id int
+  deleted_at timesatmp
+  created_at timestamp
+  updated_at timestamp
+}
+
+options {
+  id int pk
+  question_id int fk
+  option_text string not null
+  display_order int not null
+  created_at timestamp
+  updated_at timestamp
+}
+
+question_answers{
+  id int pk
+  question_id int fk not null
+  answer_data json not null
+  created_at timestamp
+  updated_at timestamp
+}
+
+quiz {
+  id int pk
+  name string not null
+  allotted_time_in_sec int
+  quiz_status enum not null // draft, active, inactive
+  created_by_id int not null
+  published_at timestamp
+  deleted_at timestamp
+  create_at timestamp
+  updated_at timestamp
+}
+
+quiz_question {
+  id int pk
+  quiz_id int fk not null
+  question_id int fk not null
+  points int not null
+  display_order int not null
+}
+
+user_type {
+  id int pk
+  user_type string not null
+  role_description string
+}
+
+user {
+  id int pk
+  first_name string not null
+  last_name string
+  user_type_id int fk not null
+  email string not null unique
+  status enum not null //active, inactive
+  hashed_password string not null
+  created_at timestamp
+  updated_at timestamp
+}
+
+quiz_attempt{
+  id int pk
+  user_id int fk
+  quiz_id int fk
+  attempt_number int not null
+  completion_status enum
+  evaluation_status enum
+  time_taken_in_sec int not null
+  total_points_awarded int
+  started_at timestamp
+  completed_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+quiz_attempt_response {
+  id int
+  quiz_attempt_id int fk not null
+  quiz_question_id int fk not null
+  answer_data json
+  is_correct bool
+  evaluation_status enum
+  allotted_points int
+  comment string
+  graded_by_id int 
+  graded_at timestamp
+}
+
+
+question.question_type_id -question_types.id
+
+question.id - question_answers.question_id
+
+
+options.question_id - question.id
+
+quiz.created_by_id - user.id
+
+quiz_question.quiz_id - quiz.id
+quiz_question.question_id - question.id
+
+user.user_type_id - user_type.id
+
+quiz_attempt.user_id - user.id
+quiz_attempt.quiz_id - quiz.id
+
+quiz_attempt_response.quiz_attempt_id - quiz_attempt.id
+
+quiz_attempt_response.quiz_question_id - quiz_question.id
