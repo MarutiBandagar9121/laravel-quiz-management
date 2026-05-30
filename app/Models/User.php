@@ -31,6 +31,11 @@ class User extends Authenticatable implements PasskeyUser
         ];
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->userType?->user_type === 'admin';
+    }
+
     public function userType(): BelongsTo
     {
         return $this->belongsTo(UserType::class);
