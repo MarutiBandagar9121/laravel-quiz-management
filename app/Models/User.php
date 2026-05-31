@@ -36,6 +36,14 @@ class User extends Authenticatable implements PasskeyUser
         return $this->userType?->user_type === 'admin';
     }
 
+    public function initials(): string
+    {
+        $first = mb_substr($this->first_name ?? '', 0, 1);
+        $last  = mb_substr($this->last_name ?? '', 0, 1);
+
+        return strtoupper($first . $last) ?: '??';
+    }
+
     public function userType(): BelongsTo
     {
         return $this->belongsTo(UserType::class);

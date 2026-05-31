@@ -11,6 +11,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserTypeSeeder::class,
             QuestionTypeSeeder::class,
+            AdminUserSeeder::class,
+            UserSeeder::class,
+            QuestionBankSeeder::class,
         ]);
     }
 }
