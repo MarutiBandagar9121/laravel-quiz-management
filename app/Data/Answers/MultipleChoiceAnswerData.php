@@ -5,7 +5,7 @@ namespace App\Data\Answers;
 readonly class MultipleChoiceAnswerData
 {
     /**
-     * @param int[] $option_ids
+     * @param  int[]  $option_ids
      */
     public function __construct(
         public array $option_ids,

@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Admin\Questions\Index as AdminQuestionsIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -18,7 +19,10 @@ Route::middleware(['auth', 'admin'])
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
 
         Route::view('/quizzes', 'coming-soon')->name('quizzes.index');
-        Route::view('/questions', 'coming-soon')->name('questions.index');
+        Route::get('/questions', AdminQuestionsIndex::class)->name('questions.index');
+        Route::view('/questions/create', 'coming-soon')->name('questions.create');
+        Route::view('/questions/{question}', 'coming-soon')->name('questions.show');
+        Route::view('/questions/{question}/edit', 'coming-soon')->name('questions.edit');
         Route::view('/submissions', 'coming-soon')->name('submissions.index');
         Route::view('/users', 'coming-soon')->name('users.index');
     });

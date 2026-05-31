@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum QuizStatusEnum: string
 {
-    case Draft    = 'draft';
-    case Active   = 'active';
+    case Draft = 'draft';
+    case Active = 'active';
     case Inactive = 'inactive';
 }

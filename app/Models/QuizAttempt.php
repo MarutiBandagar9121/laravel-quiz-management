@@ -13,8 +13,8 @@ class QuizAttempt extends Model
     protected $casts = [
         'completion_status' => QuizAttemptCompletionStatus::class,
         'evaluation_status' => QuizAttemptEvaluationStatus::class,
-        'started_at'        => 'datetime',
-        'completed_at'      => 'datetime',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

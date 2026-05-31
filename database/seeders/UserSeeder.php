@@ -17,11 +17,11 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => env('TEST_USER_EMAIL')],
             [
-                'first_name'   => env('TEST_USER_FIRST_NAME', 'Test'),
-                'last_name'    => env('TEST_USER_LAST_NAME', 'User'),
-                'password'     => Hash::make(env('TEST_USER_PASSWORD')),
+                'first_name' => env('TEST_USER_FIRST_NAME', 'Test'),
+                'last_name' => env('TEST_USER_LAST_NAME', 'User'),
+                'password' => Hash::make(env('TEST_USER_PASSWORD')),
                 'user_type_id' => $userType->id,
-                'status'       => UserStatusEnum::Active,
+                'status' => UserStatusEnum::Active,
             ]
         );
     }

@@ -13,7 +13,7 @@ class Quiz extends Model
     use SoftDeletes;
 
     protected $casts = [
-        'quiz_status'  => QuizStatusEnum::class,
+        'quiz_status' => QuizStatusEnum::class,
         'published_at' => 'datetime',
     ];
 

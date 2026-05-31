@@ -12,7 +12,7 @@ readonly class TextAnswerData
     public function toArray(): array
     {
         return array_filter([
-            'value'        => $this->value,
+            'value' => $this->value,
             'model_answer' => $this->model_answer,
         ], fn ($v) => $v !== null);
     }

@@ -24,12 +24,12 @@ class CreateNewUser implements CreatesNewUsers
         $userType = UserType::where('user_type', 'user')->firstOrFail();
 
         return User::create([
-            'first_name'   => $input['first_name'],
-            'last_name'    => $input['last_name'] ?? null,
-            'email'        => $input['email'],
-            'password'     => $input['password'],
+            'first_name' => $input['first_name'],
+            'last_name' => $input['last_name'] ?? null,
+            'email' => $input['email'],
+            'password' => $input['password'],
             'user_type_id' => $userType->id,
-            'status'       => UserStatusEnum::Active,
+            'status' => UserStatusEnum::Active,
         ]);
     }
 }

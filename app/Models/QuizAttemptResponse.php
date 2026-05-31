@@ -9,7 +9,7 @@ class QuizAttemptResponse extends Model
 {
     protected $casts = [
         'answer_data' => 'array',
-        'graded_at'   => 'datetime',
+        'graded_at' => 'datetime',
     ];
 
     public function quizAttempt(): BelongsTo
