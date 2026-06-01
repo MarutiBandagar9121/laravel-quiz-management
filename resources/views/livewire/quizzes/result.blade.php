@@ -1,7 +1,7 @@
 <div>
     {{-- ── Header ──────────────────────────────────────────────────────────── --}}
     <div class="flex items-center gap-3 mb-6">
-        <flux:button icon="arrow-left" variant="ghost" href="{{ route('dashboard') }}" wire:navigate />
+        <flux:button icon="arrow-left" variant="ghost" href="{{ $isGuest ? route('quizzes.index') : route('dashboard') }}" wire:navigate />
         <div>
             <flux:heading size="xl">{{ $attempt->quiz->name }}</flux:heading>
             <flux:subheading>Attempt #{{ $attempt->attempt_number }} · {{ $attempt->completed_at?->format('d M Y, H:i') }}</flux:subheading>
@@ -140,9 +140,15 @@
             <flux:button href="{{ route('quizzes.take', $attempt->quiz_id) }}" wire:navigate variant="outline" icon="arrow-path">
                 Attempt Again
             </flux:button>
-            <flux:button href="{{ route('dashboard') }}" wire:navigate variant="ghost">
-                Back to Dashboard
-            </flux:button>
+            @if ($isGuest)
+                <flux:button href="{{ route('quizzes.index') }}" wire:navigate variant="ghost">
+                    Browse More Quizzes
+                </flux:button>
+            @else
+                <flux:button href="{{ route('dashboard') }}" wire:navigate variant="ghost">
+                    Back to Dashboard
+                </flux:button>
+            @endif
         </div>
 
     </div>

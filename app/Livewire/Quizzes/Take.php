@@ -28,34 +28,60 @@ class Take extends Component
         $quiz->loadMissing('quizQuestions.question.questionType', 'quizQuestions.question.options');
         $this->quiz = $quiz;
 
-        $existing = QuizAttempt::where('user_id', auth()->id())
-            ->where('quiz_id', $quiz->id)
-            ->where('completion_status', QuizAttemptCompletionStatus::InProgress)
-            ->with('responses')
-            ->first();
+        $existing = $this->findInProgressAttempt($quiz);
 
         if ($existing) {
             $this->attempt = $existing;
             $this->loadExistingAnswers($existing);
         } else {
-            $lastNumber = QuizAttempt::where('user_id', auth()->id())
-                ->where('quiz_id', $quiz->id)
-                ->max('attempt_number') ?? 0;
-
             $this->attempt = QuizAttempt::create([
                 'user_id' => auth()->id(),
                 'quiz_id' => $quiz->id,
-                'attempt_number' => $lastNumber + 1,
+                'attempt_number' => $this->nextAttemptNumber($quiz),
                 'completion_status' => QuizAttemptCompletionStatus::InProgress,
                 'evaluation_status' => QuizAttemptEvaluationStatus::Pending,
                 'started_at' => now(),
             ]);
+
+            if (! auth()->check()) {
+                session(["guest_attempt_{$quiz->id}" => $this->attempt->id]);
+            }
 
             foreach ($quiz->quizQuestions as $qq) {
                 $type = $qq->question->questionType->question_type;
                 $this->answers[$qq->id] = $type === 'multiple_choice' ? [] : '';
             }
         }
+    }
+
+    private function findInProgressAttempt(Quiz $quiz): ?QuizAttempt
+    {
+        if (auth()->check()) {
+            return QuizAttempt::where('user_id', auth()->id())
+                ->where('quiz_id', $quiz->id)
+                ->where('completion_status', QuizAttemptCompletionStatus::InProgress)
+                ->with('responses')
+                ->first();
+        }
+
+        $guestId = session("guest_attempt_{$quiz->id}");
+
+        return $guestId ? QuizAttempt::where('id', $guestId)
+            ->whereNull('user_id')
+            ->where('completion_status', QuizAttemptCompletionStatus::InProgress)
+            ->with('responses')
+            ->first() : null;
+    }
+
+    private function nextAttemptNumber(Quiz $quiz): int
+    {
+        if (! auth()->check()) {
+            return 1;
+        }
+
+        return (QuizAttempt::where('user_id', auth()->id())
+            ->where('quiz_id', $quiz->id)
+            ->max('attempt_number') ?? 0) + 1;
     }
 
     private function loadExistingAnswers(QuizAttempt $attempt): void

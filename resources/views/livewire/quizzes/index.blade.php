@@ -52,25 +52,14 @@
                         </div>
                     </div>
 
-                    @auth
-                        <flux:button
-                            variant="primary"
-                            class="w-full"
-                            href="{{ route('quizzes.take', $quiz->id) }}"
-                            wire:navigate
-                        >
-                            Start Quiz
-                        </flux:button>
-                    @else
-                        <flux:button
-                            variant="primary"
-                            class="w-full"
-                            href="{{ route('login') }}"
-                            wire:navigate
-                        >
-                            Log in to Start
-                        </flux:button>
-                    @endauth
+                    <flux:button
+                        variant="primary"
+                        class="w-full"
+                        href="{{ route('quizzes.take', $quiz->id) }}"
+                        wire:navigate
+                    >
+                        Start Quiz
+                    </flux:button>
                 </div>
             @endforeach
         </div>

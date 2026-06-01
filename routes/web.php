@@ -11,6 +11,7 @@ use App\Livewire\Admin\Quizzes\Index as AdminQuizzesIndex;
 use App\Livewire\Admin\Quizzes\Show as AdminQuizzesShow;
 use App\Livewire\Admin\Submissions\Index as AdminSubmissionsIndex;
 use App\Livewire\Admin\Submissions\Review as AdminSubmissionsReview;
+use App\Livewire\Admin\Users\Index as AdminUsersIndex;
 use App\Livewire\Quizzes\Index as QuizzesIndex;
 use App\Livewire\Quizzes\Result as QuizzesResult;
 use App\Livewire\Quizzes\Take as QuizzesTake;
@@ -19,15 +20,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 
-// Public quiz browsing
+// Public quiz browsing and taking (guests allowed)
 Route::get('/quizzes', QuizzesIndex::class)->name('quizzes.index');
+Route::get('/quizzes/{quiz}/take', QuizzesTake::class)->name('quizzes.take');
+Route::get('/attempts/{attempt}', QuizzesResult::class)->name('attempts.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', UserDashboard::class)->name('dashboard');
-
-    // Quiz taking and results (auth required for persistence)
-    Route::get('/quizzes/{quiz}/take', QuizzesTake::class)->name('quizzes.take');
-    Route::get('/attempts/{attempt}', QuizzesResult::class)->name('attempts.show');
 });
 
 Route::middleware(['auth', 'admin'])
@@ -47,7 +46,7 @@ Route::middleware(['auth', 'admin'])
         Route::get('/questions/{question}/edit', AdminQuestionsEdit::class)->name('questions.edit');
         Route::get('/submissions', AdminSubmissionsIndex::class)->name('submissions.index');
         Route::get('/submissions/{attempt}', AdminSubmissionsReview::class)->name('submissions.review');
-        Route::view('/users', 'coming-soon')->name('users.index');
+        Route::get('/users', AdminUsersIndex::class)->name('users.index');
     });
 
 require __DIR__.'/settings.php';

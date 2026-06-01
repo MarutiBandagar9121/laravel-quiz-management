@@ -13,7 +13,13 @@ class Result extends Component
 
     public function mount(QuizAttempt $attempt): void
     {
-        abort_if($attempt->user_id !== auth()->id(), 403);
+        if (auth()->check()) {
+            abort_if($attempt->user_id !== auth()->id(), 403);
+        } else {
+            abort_if($attempt->user_id !== null, 403);
+            abort_if(session("guest_attempt_{$attempt->quiz_id}") !== $attempt->id, 403);
+        }
+
         abort_if($attempt->completion_status !== QuizAttemptCompletionStatus::Completed, 404);
 
         $attempt->loadMissing(
@@ -82,6 +88,7 @@ class Result extends Component
             'quizQuestions' => $quizQuestions,
             'totalAvailable' => $totalAvailable,
             'percentage' => $percentage,
+            'isGuest' => ! auth()->check(),
         ])->layout('layouts.app');
     }
 }
