@@ -12,6 +12,14 @@ class Quiz extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = [
+        'name',
+        'allotted_time_in_sec',
+        'quiz_status',
+        'created_by_id',
+        'published_at',
+    ];
+
     protected $casts = [
         'quiz_status' => QuizStatusEnum::class,
         'published_at' => 'datetime',
