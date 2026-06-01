@@ -89,6 +89,6 @@ class Result extends Component
             'totalAvailable' => $totalAvailable,
             'percentage' => $percentage,
             'isGuest' => ! auth()->check(),
-        ])->layout('layouts.app');
+        ])->layout('layouts.public');
     }
 }

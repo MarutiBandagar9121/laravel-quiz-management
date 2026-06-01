@@ -200,6 +200,6 @@ class Take extends Component
 
     public function render()
     {
-        return view('livewire.quizzes.take')->layout('layouts.app');
+        return view('livewire.quizzes.take')->layout('layouts.public');
     }
 }
