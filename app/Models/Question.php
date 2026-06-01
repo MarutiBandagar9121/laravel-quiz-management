@@ -13,6 +13,15 @@ class Question extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = [
+        'question_text',
+        'question_hint',
+        'question_type_id',
+        'question_status',
+        'created_by_id',
+        'updated_by_id',
+    ];
+
     protected $casts = [
         'question_status' => QuestionStatusEnum::class,
     ];

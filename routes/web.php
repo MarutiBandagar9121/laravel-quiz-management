@@ -1,7 +1,10 @@
 <?php
 
 use App\Livewire\Admin\Dashboard as AdminDashboard;
+use App\Livewire\Admin\Questions\Create as AdminQuestionsCreate;
+use App\Livewire\Admin\Questions\Edit as AdminQuestionsEdit;
 use App\Livewire\Admin\Questions\Index as AdminQuestionsIndex;
+use App\Livewire\Admin\Questions\Show as AdminQuestionsShow;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -20,9 +23,9 @@ Route::middleware(['auth', 'admin'])
 
         Route::view('/quizzes', 'coming-soon')->name('quizzes.index');
         Route::get('/questions', AdminQuestionsIndex::class)->name('questions.index');
-        Route::view('/questions/create', 'coming-soon')->name('questions.create');
-        Route::view('/questions/{question}', 'coming-soon')->name('questions.show');
-        Route::view('/questions/{question}/edit', 'coming-soon')->name('questions.edit');
+        Route::get('/questions/create', AdminQuestionsCreate::class)->name('questions.create');
+        Route::get('/questions/{question}', AdminQuestionsShow::class)->name('questions.show')->withTrashed();
+        Route::get('/questions/{question}/edit', AdminQuestionsEdit::class)->name('questions.edit');
         Route::view('/submissions', 'coming-soon')->name('submissions.index');
         Route::view('/users', 'coming-soon')->name('users.index');
     });

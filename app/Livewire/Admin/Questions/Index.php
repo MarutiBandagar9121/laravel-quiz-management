@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Questions;
 use App\Enums\QuestionStatusEnum;
 use App\Models\Question;
 use App\Models\QuestionType;
+use Flux\Flux;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -30,6 +31,22 @@ class Index extends Component
 
     public function updatingFilterStatus(): void
     {
+        $this->resetPage();
+    }
+
+    public function markActive(int $id): void
+    {
+        $question = Question::where('question_status', QuestionStatusEnum::Inactive)->findOrFail($id);
+        $question->update(['question_status' => QuestionStatusEnum::Active]);
+
+        Flux::toast('Question marked as active.', variant: 'success');
+    }
+
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->filterType = '';
+        $this->filterStatus = '';
         $this->resetPage();
     }
 

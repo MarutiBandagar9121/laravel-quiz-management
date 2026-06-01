@@ -10,7 +10,7 @@
     </div>
 
     {{-- Filters --}}
-    <div class="flex flex-wrap gap-3 mb-5">
+    <div class="flex flex-wrap items-center gap-3 mb-5">
         <flux:input
             wire:model.live.debounce.300ms="search"
             placeholder="Search questions…"
@@ -18,7 +18,8 @@
             class="w-72"
         />
 
-        <flux:select wire:model.live="filterType" placeholder="All types" class="w-48">
+        <flux:select wire:model.live="filterType" class="w-48">
+            <flux:select.option value="">All types</flux:select.option>
             @foreach ($questionTypes as $type)
                 <flux:select.option value="{{ $type->id }}">
                     {{ str_replace('_', ' ', ucfirst($type->question_type)) }}
@@ -26,7 +27,8 @@
             @endforeach
         </flux:select>
 
-        <flux:select wire:model.live="filterStatus" placeholder="All statuses" class="w-44">
+        <flux:select wire:model.live="filterStatus" class="w-44">
+            <flux:select.option value="">All statuses</flux:select.option>
             @foreach ($statuses as $status)
                 <flux:select.option value="{{ $status->value }}">
                     {{ ucfirst($status->value) }}
@@ -34,6 +36,12 @@
             @endforeach
             <flux:select.option value="deleted">Deleted</flux:select.option>
         </flux:select>
+
+        @if ($search || $filterType || $filterStatus)
+            <flux:button wire:click="clearFilters" variant="ghost" size="sm" icon="x-mark">
+                Clear filters
+            </flux:button>
+        @endif
     </div>
 
     {{-- Table --}}
@@ -85,11 +93,20 @@
                                 <flux:menu.item icon="eye" href="{{ route('admin.questions.show', $question->id) }}" wire:navigate>
                                     View
                                 </flux:menu.item>
-                                @unless ($question->trashed() || $question->question_status === \App\Enums\QuestionStatusEnum::Active)
+                                @if ($question->question_status === \App\Enums\QuestionStatusEnum::Draft && ! $question->trashed())
                                     <flux:menu.item icon="pencil" href="{{ route('admin.questions.edit', $question->id) }}" wire:navigate>
                                         Edit
                                     </flux:menu.item>
-                                @endunless
+                                @endif
+                                @if ($question->question_status === \App\Enums\QuestionStatusEnum::Inactive && ! $question->trashed())
+                                    <flux:menu.item
+                                        icon="check-circle"
+                                        wire:click="markActive({{ $question->id }})"
+                                        wire:confirm="Mark this question as active?"
+                                    >
+                                        Mark Active
+                                    </flux:menu.item>
+                                @endif
                             </flux:menu>
                         </flux:dropdown>
                     </flux:table.cell>
