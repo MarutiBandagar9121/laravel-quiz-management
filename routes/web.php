@@ -9,13 +9,23 @@ use App\Livewire\Admin\Quizzes\Create as AdminQuizzesCreate;
 use App\Livewire\Admin\Quizzes\Edit as AdminQuizzesEdit;
 use App\Livewire\Admin\Quizzes\Index as AdminQuizzesIndex;
 use App\Livewire\Admin\Quizzes\Show as AdminQuizzesShow;
+use App\Livewire\Quizzes\Index as QuizzesIndex;
+use App\Livewire\Quizzes\Take as QuizzesTake;
+use App\Livewire\Quizzes\Result as QuizzesResult;
+use App\Livewire\UserDashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
-Route::view('/quizzes', 'coming-soon')->name('quizzes.index');
+
+// Public quiz browsing
+Route::get('/quizzes', QuizzesIndex::class)->name('quizzes.index');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('/dashboard', UserDashboard::class)->name('dashboard');
+
+    // Quiz taking and results (auth required for persistence)
+    Route::get('/quizzes/{quiz}/take', QuizzesTake::class)->name('quizzes.take');
+    Route::get('/attempts/{attempt}', QuizzesResult::class)->name('attempts.show');
 });
 
 Route::middleware(['auth', 'admin'])

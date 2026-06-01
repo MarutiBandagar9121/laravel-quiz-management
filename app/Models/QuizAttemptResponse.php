@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuizAttemptResponse extends Model
 {
+    protected $fillable = [
+        'quiz_attempt_id', 'quiz_question_id', 'answer_data',
+        'is_correct', 'allotted_points', 'comment', 'graded_by_id', 'graded_at',
+    ];
+
     protected $casts = [
         'answer_data' => 'array',
         'graded_at' => 'datetime',

@@ -10,6 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QuizAttempt extends Model
 {
+    protected $fillable = [
+        'user_id', 'quiz_id', 'attempt_number', 'completion_status',
+        'evaluation_status', 'time_taken_in_sec', 'total_points_awarded',
+        'started_at', 'completed_at',
+    ];
+
     protected $casts = [
         'completion_status' => QuizAttemptCompletionStatus::class,
         'evaluation_status' => QuizAttemptEvaluationStatus::class,
