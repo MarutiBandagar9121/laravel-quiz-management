@@ -9,13 +9,13 @@ use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\QuizAttemptResponse;
 use App\Models\QuizQuestion;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class Take extends Component
 {
     public Quiz $quiz;
+
     public QuizAttempt $attempt;
 
     /** @var array<int, string|string[]> Keyed by quiz_question_id */
@@ -68,6 +68,7 @@ class Take extends Component
 
             if (! $response || ! $response->answer_data) {
                 $this->answers[$qq->id] = $type === 'multiple_choice' ? [] : '';
+
                 continue;
             }
 

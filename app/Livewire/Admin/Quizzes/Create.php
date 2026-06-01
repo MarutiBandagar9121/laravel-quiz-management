@@ -159,7 +159,7 @@ class Create extends Component
             }
         });
 
-        Flux::toast('Quiz ' . ($isPublishing ? 'published' : 'saved as draft') . ' successfully.', variant: 'success');
+        Flux::toast('Quiz '.($isPublishing ? 'published' : 'saved as draft').' successfully.', variant: 'success');
         $this->redirect(route('admin.quizzes.index'), navigate: true);
     }
 

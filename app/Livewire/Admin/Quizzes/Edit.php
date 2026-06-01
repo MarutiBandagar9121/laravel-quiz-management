@@ -187,7 +187,7 @@ class Edit extends Component
             }
         });
 
-        Flux::toast('Quiz ' . ($isPublishing ? 'published' : 'updated') . ' successfully.', variant: 'success');
+        Flux::toast('Quiz '.($isPublishing ? 'published' : 'updated').' successfully.', variant: 'success');
         $this->redirect(route('admin.quizzes.show', $this->quiz->id), navigate: true);
     }
 

@@ -9,9 +9,11 @@ use App\Livewire\Admin\Quizzes\Create as AdminQuizzesCreate;
 use App\Livewire\Admin\Quizzes\Edit as AdminQuizzesEdit;
 use App\Livewire\Admin\Quizzes\Index as AdminQuizzesIndex;
 use App\Livewire\Admin\Quizzes\Show as AdminQuizzesShow;
+use App\Livewire\Admin\Submissions\Index as AdminSubmissionsIndex;
+use App\Livewire\Admin\Submissions\Review as AdminSubmissionsReview;
 use App\Livewire\Quizzes\Index as QuizzesIndex;
-use App\Livewire\Quizzes\Take as QuizzesTake;
 use App\Livewire\Quizzes\Result as QuizzesResult;
+use App\Livewire\Quizzes\Take as QuizzesTake;
 use App\Livewire\UserDashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -43,7 +45,8 @@ Route::middleware(['auth', 'admin'])
         Route::get('/questions/create', AdminQuestionsCreate::class)->name('questions.create');
         Route::get('/questions/{question}', AdminQuestionsShow::class)->name('questions.show')->withTrashed();
         Route::get('/questions/{question}/edit', AdminQuestionsEdit::class)->name('questions.edit');
-        Route::view('/submissions', 'coming-soon')->name('submissions.index');
+        Route::get('/submissions', AdminSubmissionsIndex::class)->name('submissions.index');
+        Route::get('/submissions/{attempt}', AdminSubmissionsReview::class)->name('submissions.review');
         Route::view('/users', 'coming-soon')->name('users.index');
     });
 
