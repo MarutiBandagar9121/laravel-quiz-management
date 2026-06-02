@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a fully server-rendered Laravel application built on the **Livewire + Blade** stack. There is no separate frontend framework or API layer — all rendering happens on the server, and Livewire handles interactivity by diffing DOM over a persistent HTTP connection.
+This is a Laravel application built with **Livewire + Blade**. There is no separate frontend framework or API layer — Livewire handles interactivity within server-rendered Blade templates over a persistent HTTP connection.
 
 The system is designed around three concerns:
 
@@ -16,42 +16,29 @@ The system is designed around three concerns:
 
 | Choice | Rationale |
 |--------|-----------|
-| **Laravel 13 + Livewire 4** | Server-rendered, no SPA complexity. Components stay in PHP — no context switching between backend and frontend code. |
+| **Laravel 13 + Livewire 4** | No SPA complexity. Components stay in PHP — no context switching between backend and frontend code. |
 | **Flux UI** | Livewire-native component library. Keeps the UI layer consistent without pulling in a JS framework. |
 | **MySQL** | Relational data with strict foreign key constraints fits the quiz domain well — attempts reference specific quiz-question snapshots that must never be modified. |
-| **Laravel Fortify** | Handles auth boilerplate (login, register, password reset) without tying the app to a full starter kit opinionated about UI. |
-| **Database-backed sessions, cache, and queues** | Keeps the dev setup simple — no Redis required locally. Can be swapped to Redis in production with a single env change. |
-
----
-
-## Application Layers
-
-```
-routes/
-  web.php          → public quiz routes (guest + auth)
-  settings.php     → auth routes (Fortify)
-  admin.php        → /admin/* (auth + admin middleware)
-
-app/
-  Http/Middleware/ → EnsureUserIsAdmin, etc.
-  Livewire/        → all interactive UI components
-    Admin/         → quiz builder, question bank, grading UI
-    Quiz/          → quiz listing, quiz attempt flow
-    Dashboard/     → user attempt history
-  Models/          → Eloquent models, casts, relationships
-  Services/        → business logic (publishing, grading, scoring)
-  Actions/         → single-purpose action classes (Fortify hooks)
-
-resources/views/
-  livewire/        → Blade templates for Livewire components
-  layouts/         → app shell, admin shell
-```
-
-Business logic lives in **service classes**, not in Livewire components or controllers. Components are responsible for UI state and dispatching to services. This keeps components testable in isolation and keeps the rules in one place.
+| **Laravel Fortify** | Handles login and registration. Auth is kept intentionally minimal — no password reset, no OAuth. |
 
 ---
 
 ## Data Model Design
+
+### Tables and their intent
+
+| Table | What it stores |
+|-------|----------------|
+| `user_types` | Lookup table for user roles (`admin`, `user`). Referenced by `users.user_type_id`. |
+| `users` | User accounts — email, hashed password, name, and role FK. Guests have no row here; their attempts are tracked by session. |
+| `question_types` | Defines each question kind (`bool`, `single_option`, `multiple_option`, `text`), a `renderer_hint` for the UI, and `evaluation_mode` (`auto` or `manual`). Drives both rendering and grading without hardcoded type switches. |
+| `questions` | The shared question bank. Each question has a type, a status lifecycle, and authorship tracking. Not tied to any specific quiz. |
+| `options` | Answer choices for `bool`, `single_option`, and `multiple_option` questions. Ordered by `display_order`. |
+| `question_answers` | Stores the correct answer for a question as JSON. Kept separate from `questions` so the answer shape can vary freely by type without nullable columns. |
+| `quizzes` | Quiz definitions — title, description, time limit, status. Once published, the quiz is locked against edits. |
+| `quiz_questions` | Pivot linking a quiz to its questions. Adds `points` (per-question weight in this quiz) and `display_order`. Attempt responses reference this row — not the raw question — so point values and order are frozen per quiz. |
+| `quiz_attempts` | One row per attempt by a user (or session, for guests). Tracks completion status, evaluation status, total score, and time taken. |
+| `quiz_attempt_responses` | One row per question answered within an attempt. Stores the user's raw `answer_data` as JSON, grading outcome (`is_correct`, `allotted_points`), and manual grading metadata (`graded_by_id`, `comment`). |
 
 ### The question bank is independent of quizzes
 
@@ -94,27 +81,6 @@ The system is designed so that adding a new question type — say, `ranking` or 
 
 No existing code changes. No switch statements to update. The `question_types` table drives runtime behaviour.
 
-### Evaluation strategy (simplified)
-
-```php
-// GradingService.php
-public function evaluate(QuizAttemptResponse $response): void
-{
-    $type = $response->quizQuestion->question->questionType;
-    $evaluator = $this->resolveEvaluator($type->value); // registry lookup
-    $result = $evaluator->evaluate(
-        correct: $response->quizQuestion->question->answer->answer_data,
-        given:   $response->answer_data,
-    );
-    $response->update([
-        'is_correct'      => $result->isCorrect,
-        'allotted_points' => $result->points,
-    ]);
-}
-```
-
-The `resolveEvaluator()` method is the only place a question type name appears — a single registry, not scattered conditionals.
-
 ---
 
 ## Status Lifecycle
@@ -127,36 +93,39 @@ draft ──→ published ──→ inactive
           (locked — no edits allowed)
 ```
 
-**Why not allow editing after publish?**
+**Why this approach and how it ensures data consistency**
 
-`quiz_attempt_responses` reference specific question content via foreign keys to `quiz_questions`. If a published question could be edited, a past attempt's response would silently point to different content than what the user actually answered. Scores would become meaningless. Immutability is the only correct guarantee here — it is enforced in the service layer and returns a 403 for any mutation attempt on a published resource.
+The status lifecycle is the primary mechanism for data integrity in this system. When a question or quiz moves to `published`, every piece of content that future attempt responses will reference — question text, options, correct answers, point values, question order — is frozen at that point in time. No further writes are permitted to those fields.
 
-Soft deletes (`deleted_at`) are used instead of hard deletes on quizzes and questions so that all attempt history remains referentially valid even after a quiz is retired.
+This matters because `quiz_attempt_responses` are permanently linked to a specific `quiz_question` row. If published content could be edited after attempts were recorded, a past response would silently describe a different question than the one the user actually answered. Scores, percentages, and admin grading decisions would all become untrustworthy. The lock is not a UI restriction — it is a data consistency guarantee enforced at the service layer, returning a 403 for any mutation attempt on a published resource.
+
+The `inactive` state exists to retire content gracefully: a published quiz that should no longer accept new attempts becomes `inactive`, and a question no longer suitable for new quizzes becomes `inactive`. In both cases the existing attempt history is completely untouched and remains queryable.
+
+Soft deletes (`deleted_at`) are used instead of hard deletes on quizzes and questions for the same reason — even a "deleted" quiz must keep its attempt data referentially valid.
+
+**Lifecycle rules:**
+
+| Transition | Allowed? |
+|-----------|---------|
+| `draft → published` | Yes — locks content |
+| `published → inactive` | Yes — stops new attempts/usage |
+| `inactive → published` | No |
+| `draft` → permanent delete | Yes — no attempts exist, no references; hard delete keeps the DB clean |
+| `inactive` → soft delete | Yes — attempt history must remain intact |
+| Edit a published resource | No — returns 403 |
 
 ---
 
-## Access Control
+## Access Model
 
-Three tiers, enforced at the route/middleware layer:
+The system has two types of authenticated users, determined by `users.user_type_id`:
 
-```
-Public (no auth)
-  GET /                     → quiz listing
-  GET /quizzes/{quiz}       → quiz detail
-  POST /quizzes/{quiz}/attempt → start/submit attempt (session-tracked)
+- **Regular users** log in and land on `/dashboard`, where they see their quiz attempt history, scores, and progress across all quizzes they have taken.
+- **Admins** log in and land on `/admin`, where they manage the quiz catalogue, question bank, and review or grade submissions.
 
-Authenticated users (auth middleware)
-  GET /dashboard            → attempt history and scores
+Guests (unauthenticated) can browse and take any active quiz without logging in. Their attempt is session-tracked rather than tied to a user account, so no history is persisted beyond the browser session.
 
-Admin (auth + EnsureUserIsAdmin middleware)
-  /admin/quizzes/*          → quiz CRUD, publish, deactivate
-  /admin/questions/*        → question bank management
-  /admin/attempts/*         → view all attempts, manual grading
-```
-
-Guest users can take any active quiz. Their attempt is recorded against a session identifier. Registered users get the same attempt recorded against their `user_id`, enabling the dashboard history view.
-
-The admin area is a separate route group with its own layout and middleware. There is no role dropdown or permission table — admin is a boolean flag on the user, checked once at middleware. This is intentional simplicity for the current scope.
+The admin area is guarded by a dedicated `EnsureUserIsAdmin` middleware on the `/admin/*` route group. There is no permission table or role matrix — admin is a single flag on the user record, kept simple deliberately.
 
 ---
 
