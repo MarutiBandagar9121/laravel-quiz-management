@@ -3,6 +3,7 @@
 A web-based quiz platform where admins can build and manage quizzes and users can take them, view scores, and track attempt history. Guests can take quizzes without an account; registered users get a persistent history dashboard.
 
 Architecture decisions and extensibility design are documented in [ARCHITECTURE.md](ARCHITECTURE.md).
+The full entity-relationship diagram, schema rationale, and extensibility analysis are in [DATA_MODEL.md](DATA_MODEL.md).
 
 ## Stack
 
